@@ -1,0 +1,29 @@
+{
+  "name": "queue-processor",
+  "version": "1.0.0",
+  "description": "Processes an AWS SQS queue",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liamoehlman/queue-processor.git"
+  },
+  "keywords": [
+    "sqs",
+    "queue",
+    "consumer",
+    "aws",
+    "processor"
+  ],
+  "author": "Liam Oehlman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/liamoehlman/queue-processor/issues"
+  },
+  "homepage": "https://github.com/liamoehlman/queue-processor#readme",
+  "dependencies": {
+    "aws-sdk": "^2.1.43"
+  }
+}
