@@ -5,7 +5,7 @@ Consume SQS messages and do something to them, with the SQS message passed in to
 ## Usage
 ---------------
 ```
-var sqsProcessor = require('sqs-processor'),
+var queueProcessor = require('queue-processor'),
     config = {
         accessKeyId: 'xxxxxxxxxx', // required
         secretAccessKey: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', // required
@@ -24,7 +24,7 @@ function mySweetMessageHandler(message, callback) {
     });
 }
 
-sqsProcessor(config, mySweetMessageHandler);
+queueProcessor(config, mySweetMessageHandler);
 ```
 
-Also takes an optional logger as the second param. e.g sqsProcessor(config, logger, mySweetMessageHandler)
+Also takes an optional logger as the second param. e.g queueProcessor(config, logger, mySweetMessageHandler)
