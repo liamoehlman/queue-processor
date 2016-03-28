@@ -37,7 +37,7 @@ function getMessage(sqs, config, logger, processingFunction, recurse) {
                 logger.error(error);
             }
 
-            if (data.Messages) {
+            if (data && data.Messages) {
                 currentMessage = data.Messages[0];
 
                 return processingFunction(
