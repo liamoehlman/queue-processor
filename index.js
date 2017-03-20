@@ -64,7 +64,7 @@ function setupListener(config, logger, processingFunction) {
     }
 
     function recurse() {
-        process.nextTick(function() {
+        setImmediate(function() {
             getMessage(sqs, config, logger, processingFunction, recurse);
         });
     }
