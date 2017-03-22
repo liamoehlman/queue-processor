@@ -1,25 +1,29 @@
 var AWS = require('aws-sdk');
 
-function deleteMessage(sqs, queue, messageHandle, logger) {
+function deleteMessage(sqs, queue, messageHandle, logger, recurse) {
     sqs.deleteMessage({
         QueueUrl: queue,
         ReceiptHandle: messageHandle
     }, function(error) {
         if (error) {
-            logger.error(error);
+            logger.error('Error deleting message from SQS: ' + error);
         }
+
+        recurse();
     });
 }
 
 function createProcessedCallback(sqs, config, message, logger, recurse) {
     return function(error) {
-        recurse();
+        if (error) {
+            logger.error('Message processing error: ' + error);
 
-        if (error && !config.deleteOnError) {
-            return;
+            if (!config.deleteOnError) {
+                return recurse();
+            }
         }
 
-        deleteMessage(sqs, config.queueUrl, message.ReceiptHandle, logger);
+        deleteMessage(sqs, config.queueUrl, message.ReceiptHandle, logger, recurse);
     };
 }
 
@@ -34,7 +38,7 @@ function getMessage(sqs, config, logger, processingFunction, recurse) {
         },
         function(error, data) {
             if (error) {
-                logger.error(error);
+                logger.error('Error recieving message from SQS: ' + error);
             }
 
             if (data && data.Messages) {
