@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/liamoehlman/queue-processor#readme",
   "dependencies": {
-    "aws-sdk": "^2.1.43"
+    "aws-sdk": "^2.1.43",
+    "righto": "^2.5.4"
   }
 }
