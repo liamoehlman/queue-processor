@@ -16,13 +16,17 @@ function getMessage(sqs, config, callback) {
             WaitTimeSeconds: config.waitTime || 10
         },
         function(error, data) {
+            if (error) {
+                return callback(error);
+            }
+
             if (data && data.Messages) {
                 var nextMessage = data.Messages[0];
 
                 return callback(null, nextMessage);
             }
 
-            callback(error);
+            getMessage(sqs, config, callback);
         }
     );
 }
