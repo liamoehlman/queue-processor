@@ -1,5 +1,5 @@
 var AWS = require('aws-sdk'),
-    righto = require('righto');;
+    righto = require('righto');
 
 function deleteMessage(sqs, queue, messageHandle, callback) {
     sqs.deleteMessage({
@@ -54,7 +54,7 @@ function setupListener(config, logger, processingFunction) {
             done();
         }, message, shouldDelete);
 
-        processed(function(error){
+        complete(function(error){
             if (error) {
                 logger.error(error);
             }
