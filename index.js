@@ -1,35 +1,14 @@
-var AWS = require('aws-sdk');
+var AWS = require('aws-sdk'),
+    righto = require('righto');
 
-function deleteMessage(sqs, queue, messageHandle, logger, recurse) {
+function deleteMessage(sqs, queue, messageHandle, callback) {
     sqs.deleteMessage({
         QueueUrl: queue,
         ReceiptHandle: messageHandle
-    }, function(error) {
-        if (error) {
-            logger.error('Error deleting message from SQS: ' + error);
-        }
-
-        recurse();
-    });
+    }, callback);
 }
 
-function createProcessedCallback(sqs, config, message, logger, recurse) {
-    return function(error) {
-        if (error) {
-            logger.error('Message processing error: ' + error);
-
-            if (!config.deleteOnError) {
-                return recurse();
-            }
-        }
-
-        deleteMessage(sqs, config.queueUrl, message.ReceiptHandle, logger, recurse);
-    };
-}
-
-function getMessage(sqs, config, logger, processingFunction, recurse) {
-    var currentMessage;
-
+function getMessage(sqs, config, callback) {
     sqs.receiveMessage(
         {
             QueueUrl: config.queueUrl,
@@ -37,20 +16,13 @@ function getMessage(sqs, config, logger, processingFunction, recurse) {
             WaitTimeSeconds: config.waitTime || 10
         },
         function(error, data) {
-            if (error) {
-                logger.error('Error recieving message from SQS: ' + error);
-            }
-
             if (data && data.Messages) {
-                currentMessage = data.Messages[0];
+                var nextMessage = data.Messages[0];
 
-                return processingFunction(
-                    currentMessage,
-                    createProcessedCallback(sqs, config, currentMessage, logger, recurse)
-                );
+                return callback(null, nextMessage);
             }
 
-            recurse();
+            callback(error);
         }
     );
 }
@@ -67,13 +39,31 @@ function setupListener(config, logger, processingFunction) {
         logger = console;
     }
 
-    function recurse() {
-        setImmediate(function() {
-            getMessage(sqs, config, logger, processingFunction, recurse);
+    function processNextMessage() {
+        var message = righto(getMessage, sqs, config);
+        var processed = righto.mate(righto.after(righto(processingFunction, message)));
+        var shouldDelete = righto.handle(processed, function(error, done){
+            logger.error(error);
+            done(null, !!config.deleteOnError);
+        });
+        var complete = righto(function(message, shouldDelete, done){
+            if(shouldDelete !== false){
+                return deleteMessage(sqs, config.queueUrl, message.ReceiptHandle, done);
+            }
+
+            done();
+        }, message, shouldDelete);
+
+        complete(function(error){
+            if (error) {
+                logger.error(error);
+            }
+
+            processNextMessage();
         });
     }
 
-    recurse();
+    processNextMessage();
 }
 
 module.exports = setupListener;
